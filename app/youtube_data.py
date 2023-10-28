@@ -1,3 +1,4 @@
+import pandas as pd
 from googleapiclient.discovery import build
 import os
 import re
@@ -114,10 +115,8 @@ class YouTubeData:
 
         # iterate video response
         while video_response:
-            print(video_response['items'][0])
             for item in video_response['items']:
                 # Extracting top-level comment
-
                 top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textOriginal']
                 top_level_comment_likes = item['snippet']['topLevelComment']['snippet']['likeCount']
                 top_level_comment_timestamp = item['snippet']['topLevelComment']['snippet']['publishedAt']
@@ -155,3 +154,21 @@ class YouTubeData:
                 break
 
         return comments_data
+
+    def get_comments_dataframe(self):
+        """
+        Get comments and their replies and return a pandas DataFrame.
+
+        :return: A pandas DataFrame containing comments and replies.
+        """
+        comments_data = self.get_comments()
+
+        flattened_data = []
+        for comment_data in comments_data:
+            comment = comment_data['comment']
+            flattened_data.append(comment)
+            for reply in comment_data['replies']:
+                flattened_data.append(reply)
+
+        comments_df = pd.DataFrame(flattened_data)
+        return comments_df
