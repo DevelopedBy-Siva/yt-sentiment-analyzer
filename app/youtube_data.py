@@ -1,7 +1,7 @@
 import pandas as pd
-from googleapiclient.discovery import build
 import os
-import re
+from sklearn.feature_extraction.text import re
+from googleapiclient.discovery import build
 
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -23,6 +23,12 @@ def extract_video_id(url):
         return match.group(7)
     else:
         raise InvalidYouTubeURL("Invalid URL. Please enter a valid YouTube URL.")
+
+
+def clean_data(review):
+    no_punc = re.sub(r'[^\w\s]', '', review)
+    no_digits = ''.join([i for i in no_punc if not i.isdigit()])
+    return no_digits
 
 
 class YouTubeData:
@@ -78,34 +84,35 @@ class YouTubeData:
             'views': view_count
         }
 
-    def get_comments(self):
+    def get_dataframes(self):
         """
         Retrieve comments and their replies for a YouTube video.
 
-        Returns a list of dictionaries, each containing the top-level comment,
-        its details, and replies with their details.
+        Returns a tuple of two DataFrames: one for top-level comments and
+        another for replies.
 
-        Each dictionary has the following structure:
+        Top-level comments DataFrame structure:
         {
-            'comment': {
-                'text': 'comment text...',
-                'likes': 123,
-                'timestamp': '2023-10-28T12:36:00Z'
-            },
-            'replies': [
-                {
-                    'text': 'reply text...',
-                    'likes': 45,
-                    'timestamp': '2023-10-28T12:36:00Z'
-                },
-                ...
-            ]
+            'id': '124',
+            'text': 'comment text...',
+            'likes': 123,
+            'timestamp': '2023-10-28T12:36:00Z'
+        }
+
+        Replies DataFrame structure:
+        {
+            'id': '124',
+            'text': 'reply text...',
+            'likes': 45,
+            'timestamp': '2023-10-28T12:36:00Z',
+            'comment_id': '123'  # The corresponding top-level comment ID
         }
 
         Returns:
-            list: A list of dictionaries containing comments and replies.
+            tuple: Two DataFrames - one for top-level comments and another for replies.
         """
         comments_data = []
+        replies_data = []
 
         # retrieve youtube video results
         video_response = self.youtube.commentThreads().list(
@@ -117,31 +124,32 @@ class YouTubeData:
         while video_response:
             for item in video_response['items']:
                 # Extracting top-level comment
+                top_level_comment_id = item['id']
                 top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textOriginal']
                 top_level_comment_likes = item['snippet']['topLevelComment']['snippet']['likeCount']
                 top_level_comment_timestamp = item['snippet']['topLevelComment']['snippet']['publishedAt']
 
                 # Extracting replies
-                replies_data = []
                 if 'replies' in item and 'comments' in item['replies']:
                     for reply_item in item['replies']['comments']:
+                        reply_id = reply_item['id']
                         reply_text = reply_item['snippet']['textOriginal']
                         reply_likes = reply_item['snippet']['likeCount']
                         reply_timestamp = reply_item['snippet']['publishedAt']
 
                         replies_data.append({
-                            'text': reply_text,
+                            'id': reply_id,
+                            'reply': reply_text,
                             'likes': reply_likes,
-                            'timestamp': reply_timestamp
+                            'timestamp': reply_timestamp,
+                            'comment_id': top_level_comment_id,
                         })
 
                 comments_data.append({
-                    'comment': {
-                        'text': top_level_comment_text,
-                        'likes': top_level_comment_likes,
-                        'timestamp': top_level_comment_timestamp
-                    },
-                    'replies': replies_data
+                    'id': top_level_comment_id,
+                    'comment': top_level_comment_text,
+                    'likes': top_level_comment_likes,
+                    'timestamp': top_level_comment_timestamp,
                 })
 
             if 'nextPageToken' in video_response:
@@ -153,22 +161,8 @@ class YouTubeData:
             else:
                 break
 
-        return comments_data
+        comments_dataframe = pd.DataFrame(comments_data)
+        replies_dataframe = pd.DataFrame(replies_data)
 
-    def get_comments_dataframe(self):
-        """
-        Get comments and their replies and return a pandas DataFrame.
+        return comments_dataframe, replies_dataframe
 
-        :return: A pandas DataFrame containing comments and replies.
-        """
-        comments_data = self.get_comments()
-
-        flattened_data = []
-        for comment_data in comments_data:
-            comment = comment_data['comment']
-            flattened_data.append(comment)
-            for reply in comment_data['replies']:
-                flattened_data.append(reply)
-
-        comments_df = pd.DataFrame(flattened_data)
-        return comments_df

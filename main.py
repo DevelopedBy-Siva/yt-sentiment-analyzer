@@ -30,11 +30,10 @@ if submit_btn and yt_url:
         # Collect YouTube video details
         dataset = YouTubeData(yt_url)
         info = dataset.get_video_info()
-        comments = dataset.get_comments_dataframe()
-
-        # Analyze Sentiment
-        # sentiment_analyzer = SentimentAnalyzer(comments)
-        # sentiments = sentiment_analyzer.analyze_sentiment()
+        # Comments Dataframe
+        comments_df = dataset.get_dataframes()[0]
+        # Replies Dataframe
+        replies_df = dataset.get_dataframes()[1]
 
         # EndTime: Calculate process time
         end_time = time.time()
@@ -43,10 +42,10 @@ if submit_btn and yt_url:
         new_line(st, 2)
 
         # 1. Parse and display video info
-        parse_info(st, info, comments.shape[0])
+        parse_info(st, info, len(comments_df.index))
 
         # 2. Parse and display the sample dataset
-        # parse_comments_dataset(st, comments[:8])
+        parse_comments_dataset(st, comments_df)
 
     except Exception as ex:
         error_msg = str(ex)

@@ -44,15 +44,14 @@ def parse_info(st, info, comments_count=0):
     new_line(st, 3)
 
 
-def parse_comments_dataset(st, comments):
+def parse_comments_dataset(st, comments_df):
     """
     :param st: Streamlit object
-    :param comments: comments dataset
+    :param comments_df: comments dataframe
     """
-    if not st or not comments:
-        return
 
     st.markdown("#### Sample Dataset")
     new_line(st)
 
-    st.json(comments)
+    st.dataframe(comments_df.head(100))
+
