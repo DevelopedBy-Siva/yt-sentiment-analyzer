@@ -79,19 +79,32 @@ class YouTubeData:
 
     def get_comments(self):
         """
-            Retrieve comments and their replies for a YouTube video.
+        Retrieve comments and their replies for a YouTube video.
 
-            Returns a list of dictionaries, each containing the top-level comment
-            and its associated replies.
+        Returns a list of dictionaries, each containing the top-level comment,
+        its associated likes, and replies with their associated likes.
 
-            Each dictionary has the following structure:
-            {
-                'comment': 'Top-level comment text',
-                'replies': ['Reply 1', 'Reply 2', ...]
-            }
+        Each dictionary has the following structure:
+        {
+            'comment': {
+                'text': 'Top-level comment text',
+                'likes': 123  # Number of likes for the top-level comment
+            },
+            'replies': [
+                {
+                    'text': 'Reply 1',
+                    'likes': 45  # Number of likes for reply 1
+                },
+                {
+                    'text': 'Reply 2',
+                    'likes': 67  # Number of likes for reply 2
+                },
+                ...
+            ]
+        }
 
-            Returns:
-                list: A list of dictionaries containing comments and replies.
+        Returns:
+            list: A list of dictionaries containing comments, likes, and replies.
         """
         comments_data = []
 
@@ -105,17 +118,27 @@ class YouTubeData:
         while video_response:
             for item in video_response['items']:
                 # Extracting top-level comment
-                top_level_comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+                top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textDisplay']
+                top_level_comment_likes = item['snippet']['topLevelComment']['snippet']['likeCount']
+
                 # Extracting replies
-                replies = []
+                replies_data = []
                 if 'replies' in item and 'comments' in item['replies']:
                     for reply_item in item['replies']['comments']:
-                        reply = reply_item['snippet']['textDisplay']
-                        replies.append(reply)
+                        reply_text = reply_item['snippet']['textDisplay']
+                        reply_likes = reply_item['snippet']['likeCount']
+
+                        replies_data.append({
+                            'text': reply_text,
+                            'likes': reply_likes
+                        })
 
                 comments_data.append({
-                    'comment': top_level_comment,
-                    'replies': replies
+                    'comment': {
+                        'text': top_level_comment_text,
+                        'likes': top_level_comment_likes
+                    },
+                    'replies': replies_data
                 })
 
             if 'nextPageToken' in video_response:
@@ -128,4 +151,5 @@ class YouTubeData:
                 break
 
         return comments_data
+
 
