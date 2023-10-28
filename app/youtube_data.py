@@ -76,3 +76,41 @@ class YouTubeData:
             'dislikes': dislike_count,
             'views': view_count
         }
+
+    def get_comments(self):
+        comments_data = []
+
+        # retrieve youtube video results
+        video_response = self.youtube.commentThreads().list(
+            part='snippet,replies',
+            videoId=self.video_id
+        ).execute()
+
+        # iterate video response
+        while video_response:
+            for item in video_response['items']:
+                # Extracting top-level comment
+                top_level_comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+                # Extracting replies
+                replies = []
+                if 'replies' in item and 'comments' in item['replies']:
+                    for reply_item in item['replies']['comments']:
+                        reply = reply_item['snippet']['textDisplay']
+                        replies.append(reply)
+
+                comments_data.append({
+                    'comment': top_level_comment,
+                    'replies': replies
+                })
+
+            if 'nextPageToken' in video_response:
+                video_response = self.youtube.commentThreads().list(
+                    part='snippet,replies',
+                    videoId=self.video_id,
+                    pageToken=video_response['nextPageToken']
+                ).execute()
+            else:
+                break
+
+        return comments_data
+
