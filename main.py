@@ -1,3 +1,7 @@
-from app import youtube_data
+from app.youtube_data import YouTubeData
 
-dataset = youtube_data.comments()
+video_id = "oZIlIludZto"
+
+dataset = YouTubeData(video_id)
+
+print(dataset.get_video_info())
