@@ -1,5 +1,6 @@
 from googleapiclient.discovery import build
 import os
+import re
 
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -8,11 +9,26 @@ class VideoNotFoundError(Exception):
     pass
 
 
+class InvalidYouTubeURL(Exception):
+    pass
+
+
+def extract_video_id(url):
+    pattern = re.compile(
+        r'^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*'
+    )
+    match = pattern.match(url)
+    if match and len(match.group(7)) == 11:
+        return match.group(7)
+    else:
+        raise InvalidYouTubeURL("Invalid YouTube URL")
+
+
 class YouTubeData:
 
     def __init__(self, url):
         self.youtube = build('youtube', 'v3', developerKey=API_KEY)
-        self.video_id = url
+        self.video_id = extract_video_id(url)
 
     def get_video_info(self):
         video_info = self.youtube.videos().list(
