@@ -114,10 +114,11 @@ class YouTubeData:
 
         # iterate video response
         while video_response:
+            print(video_response['items'][0])
             for item in video_response['items']:
                 # Extracting top-level comment
 
-                top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textDisplay']
+                top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textOriginal']
                 top_level_comment_likes = item['snippet']['topLevelComment']['snippet']['likeCount']
                 top_level_comment_timestamp = item['snippet']['topLevelComment']['snippet']['publishedAt']
 
@@ -125,7 +126,7 @@ class YouTubeData:
                 replies_data = []
                 if 'replies' in item and 'comments' in item['replies']:
                     for reply_item in item['replies']['comments']:
-                        reply_text = reply_item['snippet']['textDisplay']
+                        reply_text = reply_item['snippet']['textOriginal']
                         reply_likes = reply_item['snippet']['likeCount']
                         reply_timestamp = reply_item['snippet']['publishedAt']
 

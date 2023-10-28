@@ -1,3 +1,6 @@
+SAMPLE_URL = "https://www.youtube.com/watch?v=G7d5RTMcTV4"
+
+
 def new_line(st=None, count=1):
     """
     :param st: Streamlit object
@@ -38,4 +41,18 @@ def parse_info(st, info, comments_count=0):
     info_col2.metric("Views", format_large_number(info["views"]))
     info_col3.metric("Likes", format_large_number(info["likes"]))
     info_col4.metric("Comments", format_large_number(comments_count))
+    new_line(st, 3)
+
+
+def parse_comments_dataset(st, comments):
+    """
+    :param st: Streamlit object
+    :param comments: comments dataset
+    """
+    if not st or not comments:
+        return
+
+    st.markdown("#### Sample Dataset")
     new_line(st)
+
+    st.json(comments)

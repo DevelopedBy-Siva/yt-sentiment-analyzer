@@ -2,7 +2,7 @@ import streamlit as st
 import time
 from app.youtube_data import YouTubeData
 from app.sentiment_analyzer import SentimentAnalyzer
-from app.utility import new_line, parse_info
+from app.utility import new_line, parse_info, parse_comments_dataset, SAMPLE_URL
 
 # Configure the page
 st.set_page_config(page_title="YouTube Sentiment Analyzer", page_icon=None, layout="centered")
@@ -17,7 +17,7 @@ new_line(st)
 
 with st.form(key="input_form"):
     new_line(st)
-    yt_url = st.text_input("Enter YouTube URL")
+    yt_url = st.text_input("Enter YouTube URL", value=SAMPLE_URL)
     new_line(st)
     submit_btn = st.form_submit_button("Analyze", use_container_width=True)
     new_line(st)
@@ -38,11 +38,15 @@ if submit_btn and yt_url:
 
         # EndTime: Calculate process time
         end_time = time.time()
+        new_line(st)
         st.success(f"Analysis finished in {round(end_time - start_time, 2)}s")
         new_line(st, 2)
 
-        # Parse and display video info
+        # 1. Parse and display video info
         parse_info(st, info, len(comments))
+
+        # 2. Parse and display the sample dataset
+        parse_comments_dataset(st, comments[:8])
 
     except Exception as ex:
         error_msg = str(ex)
