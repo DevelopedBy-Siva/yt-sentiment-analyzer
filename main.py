@@ -1,7 +1,7 @@
 from app.youtube_data import YouTubeData
 
-video_id = "oZIlIludZto"
+url = "https://www.youtube.com/watch?v=oZIlIludZto"
 
-dataset = YouTubeData(video_id)
+dataset = YouTubeData(url)
 
 print(dataset.get_video_info())

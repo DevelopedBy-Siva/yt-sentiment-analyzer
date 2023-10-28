@@ -4,18 +4,25 @@ import os
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 
 
+class VideoNotFoundError(Exception):
+    pass
+
+
 class YouTubeData:
 
-    def __init__(self, video_id):
+    def __init__(self, url):
         self.youtube = build('youtube', 'v3', developerKey=API_KEY)
-        self.video_id = video_id
+        self.video_id = url
 
     def get_video_info(self):
-
         video_info = self.youtube.videos().list(
             part='snippet,statistics',
             id=self.video_id
         ).execute()
+
+        # throw VideoNotFoundError when video doesn't exist
+        if 'items' not in video_info or not video_info['items']:
+            raise VideoNotFoundError("Video not found.")
 
         # extract video details
         snippet = video_info['items'][0]['snippet']
@@ -34,4 +41,3 @@ class YouTubeData:
             'likes': like_count,
             'dislikes': dislike_count
         }
-
