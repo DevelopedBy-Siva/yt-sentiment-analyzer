@@ -151,5 +151,3 @@ class YouTubeData:
                 break
 
         return comments_data
-
-
