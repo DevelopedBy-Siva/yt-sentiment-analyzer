@@ -47,6 +47,10 @@ if submit_btn and yt_url:
         # 2. Parse and display the sample dataset
         parse_comments_dataset(st, comments_df)
 
+        # 3. Analyze the sentiment
+        sentiment = SentimentAnalyzer(comments_df)
+        sentiment.analyze_sentiment()
+
     except Exception as ex:
         error_msg = str(ex)
         st.error(error_msg)
