@@ -21,7 +21,7 @@ def extract_video_id(url):
     if match and len(match.group(7)) == 11:
         return match.group(7)
     else:
-        raise InvalidYouTubeURL("Invalid YouTube URL")
+        raise InvalidYouTubeURL("Invalid URL. Please enter a valid YouTube URL.")
 
 
 class YouTubeData:
