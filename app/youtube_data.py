@@ -82,29 +82,27 @@ class YouTubeData:
         Retrieve comments and their replies for a YouTube video.
 
         Returns a list of dictionaries, each containing the top-level comment,
-        its associated likes, and replies with their associated likes.
+        its details, and replies with their details.
 
         Each dictionary has the following structure:
         {
             'comment': {
-                'text': 'Top-level comment text',
-                'likes': 123  # Number of likes for the top-level comment
+                'text': 'comment text...',
+                'likes': 123,
+                'timestamp': '2023-10-28T12:36:00Z'
             },
             'replies': [
                 {
-                    'text': 'Reply 1',
-                    'likes': 45  # Number of likes for reply 1
-                },
-                {
-                    'text': 'Reply 2',
-                    'likes': 67  # Number of likes for reply 2
+                    'text': 'reply text...',
+                    'likes': 45,
+                    'timestamp': '2023-10-28T12:36:00Z'
                 },
                 ...
             ]
         }
 
         Returns:
-            list: A list of dictionaries containing comments, likes, and replies.
+            list: A list of dictionaries containing comments and replies.
         """
         comments_data = []
 
@@ -118,8 +116,10 @@ class YouTubeData:
         while video_response:
             for item in video_response['items']:
                 # Extracting top-level comment
+
                 top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textDisplay']
                 top_level_comment_likes = item['snippet']['topLevelComment']['snippet']['likeCount']
+                top_level_comment_timestamp = item['snippet']['topLevelComment']['snippet']['publishedAt']
 
                 # Extracting replies
                 replies_data = []
@@ -127,16 +127,19 @@ class YouTubeData:
                     for reply_item in item['replies']['comments']:
                         reply_text = reply_item['snippet']['textDisplay']
                         reply_likes = reply_item['snippet']['likeCount']
+                        reply_timestamp = reply_item['snippet']['publishedAt']
 
                         replies_data.append({
                             'text': reply_text,
-                            'likes': reply_likes
+                            'likes': reply_likes,
+                            'timestamp': reply_timestamp
                         })
 
                 comments_data.append({
                     'comment': {
                         'text': top_level_comment_text,
-                        'likes': top_level_comment_likes
+                        'likes': top_level_comment_likes,
+                        'timestamp': top_level_comment_timestamp
                     },
                     'replies': replies_data
                 })
