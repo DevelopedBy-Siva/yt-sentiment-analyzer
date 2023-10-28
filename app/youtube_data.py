@@ -78,6 +78,21 @@ class YouTubeData:
         }
 
     def get_comments(self):
+        """
+            Retrieve comments and their replies for a YouTube video.
+
+            Returns a list of dictionaries, each containing the top-level comment
+            and its associated replies.
+
+            Each dictionary has the following structure:
+            {
+                'comment': 'Top-level comment text',
+                'replies': ['Reply 1', 'Reply 2', ...]
+            }
+
+            Returns:
+                list: A list of dictionaries containing comments and replies.
+        """
         comments_data = []
 
         # retrieve youtube video results
