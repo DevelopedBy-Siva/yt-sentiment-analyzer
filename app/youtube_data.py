@@ -2,15 +2,13 @@ import pandas as pd
 import os
 from sklearn.feature_extraction.text import re
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
-API_KEY = os.environ.get("GOOGLE_API_KEY")
-
-
-class VideoNotFoundError(Exception):
-    pass
+# API_KEY = os.environ.get("GOOGLE_API_KEY")
+API_KEY = "AIzaSyBlyCl_nuoAWm0Pd6LuuZZB7Hnuh9qf_1w"
 
 
-class InvalidYouTubeURL(Exception):
+class DataRetrievalError(Exception):
     pass
 
 
@@ -22,7 +20,7 @@ def extract_video_id(url):
     if match and len(match.group(7)) == 11:
         return match.group(7)
     else:
-        raise InvalidYouTubeURL("Invalid URL. Please enter a valid YouTube URL.")
+        raise DataRetrievalError("Invalid URL. Please enter a valid YouTube URL.")
 
 
 def clean_data(review):
@@ -62,7 +60,7 @@ class YouTubeData:
 
         # throw VideoNotFoundError when video doesn't exist
         if 'items' not in video_info or not video_info['items']:
-            raise VideoNotFoundError("Video not found.")
+            raise DataRetrievalError("Video not found.")
 
         # extract video details
         snippet = video_info['items'][0]['snippet']
@@ -114,58 +112,69 @@ class YouTubeData:
         comments_data = []
         replies_data = []
 
-        # retrieve youtube video results
-        video_response = self.youtube.commentThreads().list(
-            part='snippet,replies',
-            videoId=self.video_id
-        ).execute()
+        try:
+            # retrieve youtube video results
+            video_response = self.youtube.commentThreads().list(
+                part='snippet,replies',
+                videoId=self.video_id
+            ).execute()
 
-        # iterate video response
-        while video_response:
-            for item in video_response['items']:
-                # Extracting top-level comment
-                top_level_comment_id = item['id']
-                top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textOriginal']
-                top_level_comment_likes = item['snippet']['topLevelComment']['snippet']['likeCount']
-                top_level_comment_timestamp = item['snippet']['topLevelComment']['snippet']['publishedAt']
+            if not video_response['items']:
+                raise DataRetrievalError("Failed to retrieve info. Try a different video.")
 
-                # Extracting replies
-                if 'replies' in item and 'comments' in item['replies']:
-                    for reply_item in item['replies']['comments']:
-                        reply_id = reply_item['id']
-                        reply_text = reply_item['snippet']['textOriginal']
-                        reply_likes = reply_item['snippet']['likeCount']
-                        reply_timestamp = reply_item['snippet']['publishedAt']
+            # iterate video response
+            while video_response:
+                for item in video_response['items']:
+                    # Extracting top-level comment
+                    top_level_comment_id = item['id']
+                    top_level_comment_text = item['snippet']['topLevelComment']['snippet']['textOriginal']
+                    top_level_comment_likes = item['snippet']['topLevelComment']['snippet']['likeCount']
+                    top_level_comment_timestamp = item['snippet']['topLevelComment']['snippet']['publishedAt']
 
-                        replies_data.append({
-                            'id': reply_id,
-                            'text': reply_text,
-                            'likes': reply_likes,
-                            'timestamp': reply_timestamp,
-                            'comment_id': top_level_comment_id,
-                        })
+                    # Extracting replies
+                    if 'replies' in item and 'comments' in item['replies']:
+                        for reply_item in item['replies']['comments']:
+                            reply_id = reply_item['id']
+                            reply_text = reply_item['snippet']['textOriginal']
+                            reply_likes = reply_item['snippet']['likeCount']
+                            reply_timestamp = reply_item['snippet']['publishedAt']
 
-                comments_data.append({
-                    'id': top_level_comment_id,
-                    'comment': top_level_comment_text,
-                    'likes': top_level_comment_likes,
-                    'timestamp': top_level_comment_timestamp,
-                })
+                            replies_data.append({
+                                'id': reply_id,
+                                'reply': reply_text,
+                                'likes': reply_likes,
+                                'timestamp': reply_timestamp,
+                                'comment_id': top_level_comment_id,
+                            })
 
-            if 'nextPageToken' in video_response:
-                video_response = self.youtube.commentThreads().list(
-                    part='snippet,replies',
-                    videoId=self.video_id,
-                    pageToken=video_response['nextPageToken']
-                ).execute()
-            else:
-                break
+                    comments_data.append({
+                        'id': top_level_comment_id,
+                        'comment': top_level_comment_text,
+                        'likes': top_level_comment_likes,
+                        'timestamp': top_level_comment_timestamp,
+                    })
 
-        comments_dataframe = pd.DataFrame(comments_data)
-        comments_dataframe["timestamp"] = pd.to_datetime(comments_dataframe["timestamp"])
+                if 'nextPageToken' in video_response:
+                    video_response = self.youtube.commentThreads().list(
+                        part='snippet,replies',
+                        videoId=self.video_id,
+                        pageToken=video_response['nextPageToken']
+                    ).execute()
+                else:
+                    break
 
-        replies_dataframe = pd.DataFrame(replies_data)
-        replies_dataframe["timestamp"] = pd.to_datetime(replies_dataframe["timestamp"])
+            comments_dataframe = pd.DataFrame(comments_data)
+            comments_dataframe["timestamp"] = pd.to_datetime(comments_dataframe["timestamp"])
 
-        return comments_dataframe, replies_dataframe
+            replies_dataframe = pd.DataFrame(replies_data)
+            replies_dataframe["timestamp"] = pd.to_datetime(replies_dataframe["timestamp"])
 
+            return comments_dataframe, replies_dataframe
+
+        except HttpError as ex:
+            error_response = ex.content.decode('utf-8')
+            if "commentsDisabled" in error_response:
+                raise DataRetrievalError("Comments are disabled for this video. Please try a different one.")
+            raise DataRetrievalError("An unexpected error occurred. Please try your request again.")
+        except Exception:
+            raise DataRetrievalError("Unable to retrieve data. Please try again or consider choosing a different video.")
