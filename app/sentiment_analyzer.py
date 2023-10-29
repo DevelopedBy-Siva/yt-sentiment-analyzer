@@ -1,7 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import re
 from textblob import TextBlob
-
+import streamlit as st
 
 def clean_data(comment):
     no_punc = re.sub(r'[^\w\s]', '', comment)
@@ -37,4 +37,6 @@ class SentimentAnalyzer:
         self.comments_df['subjectivity'] = self.comments_df['comment'].apply(get_subjectivity)
         self.comments_df['polarity'] = self.comments_df['comment'].apply(get_polarity)
         self.comments_df['analysis'] = self.comments_df['polarity'].apply(get_analysis)
+
+        st.dataframe(self.comments_df[["comment", "subjectivity", "polarity", "analysis"]])
         return self.comments_df
