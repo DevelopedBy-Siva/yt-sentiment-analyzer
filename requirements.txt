@@ -1,5 +1,5 @@
 google-api-python-client==2.105.0
-transformers==4.34.1
 streamlit==1.28.0
 pandas==2.1.2
 sklearn==0.0.post10
+textblob==0.17.1

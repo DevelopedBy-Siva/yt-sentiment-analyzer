@@ -139,7 +139,7 @@ class YouTubeData:
 
                         replies_data.append({
                             'id': reply_id,
-                            'reply': reply_text,
+                            'text': reply_text,
                             'likes': reply_likes,
                             'timestamp': reply_timestamp,
                             'comment_id': top_level_comment_id,
@@ -162,7 +162,10 @@ class YouTubeData:
                 break
 
         comments_dataframe = pd.DataFrame(comments_data)
+        comments_dataframe["timestamp"] = pd.to_datetime(comments_dataframe["timestamp"])
+
         replies_dataframe = pd.DataFrame(replies_data)
+        replies_dataframe["timestamp"] = pd.to_datetime(replies_dataframe["timestamp"])
 
         return comments_dataframe, replies_dataframe
 

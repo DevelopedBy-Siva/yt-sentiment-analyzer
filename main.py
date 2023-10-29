@@ -49,7 +49,9 @@ if submit_btn and yt_url:
 
         # 3. Analyze the sentiment
         sentiment = SentimentAnalyzer(comments_df)
-        sentiment.analyze_sentiment()
+        c = sentiment.analyze_sentiment()
+
+        st.dataframe(c)
 
     except Exception as ex:
         error_msg = str(ex)

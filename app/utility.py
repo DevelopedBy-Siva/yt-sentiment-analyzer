@@ -53,5 +53,7 @@ def parse_comments_dataset(st, comments_df):
     st.markdown("#### Sample Dataset")
     new_line(st)
 
-    st.dataframe(comments_df.head(100))
+    selected_columns = ['comment', 'likes']
+    sorted_df = comments_df.sort_values(by='likes', ascending=False)
+    st.dataframe(sorted_df[selected_columns], width=800)
 
