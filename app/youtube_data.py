@@ -132,6 +132,7 @@ class YouTubeData:
                     top_level_comment_timestamp = item['snippet']['topLevelComment']['snippet']['publishedAt']
 
                     # Extracting replies
+                    replies_count = 0
                     if 'replies' in item and 'comments' in item['replies']:
                         for reply_item in item['replies']['comments']:
                             reply_id = reply_item['id']
@@ -146,12 +147,14 @@ class YouTubeData:
                                 'timestamp': reply_timestamp,
                                 'comment_id': top_level_comment_id,
                             })
+                            replies_count += 1
 
                     comments_data.append({
                         'id': top_level_comment_id,
                         'comment': top_level_comment_text,
                         'likes': top_level_comment_likes,
                         'timestamp': top_level_comment_timestamp,
+                        'replies_count': replies_count
                     })
 
                 if 'nextPageToken' in video_response:

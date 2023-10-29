@@ -2,7 +2,7 @@ import streamlit as st
 import time
 from app.youtube_data import YouTubeData
 from app.sentiment_analyzer import SentimentAnalyzer
-from app.utility import new_line, parse_info, parse_comments_dataset, plot_comment_activity_chart, SAMPLE_URL
+from app.utility import new_line, parse_info, parse_comments_dataset, plot_comments_replies_trend, SAMPLE_URL
 
 
 # Configure the page
@@ -47,8 +47,8 @@ if submit_btn and yt_url:
         # 1. Parse and display video info
         parse_info(st, info, len(comments_df.index))
 
-        # 2. Plot comment activity
-        plot_comment_activity_chart(st, comments_df, replies_df)
+        # 2. Plot comments & replies trends in a chart
+        plot_comments_replies_trend(st, comments_df, replies_df)
 
         # 3. Parse and display the sample dataset
         parse_comments_dataset(st, comments_df)
