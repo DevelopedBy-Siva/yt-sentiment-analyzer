@@ -47,12 +47,16 @@ def parse_comments_dataset(comments_df):
     :param comments_df: comments dataframe
     """
 
-    st.markdown("##### Dataset to Analyze")
+    st.markdown("##### Sample Dataset for Sentiment Analysis")
+    st.caption("This table represents the sample dataset used for sentiment analysis. "
+               "It consists of a single data point, serving as the foundation for analyzing "
+               "sentiment in the context of the application")
     new_line()
 
-    selected_columns = ['comment', 'likes']
+    selected_columns = ['comment', 'likes', 'replies_count', 'timestamp']
     sorted_df = comments_df.sort_values(by='likes', ascending=False)
-    st.dataframe(sorted_df[selected_columns], width=2000)
+    st.dataframe(sorted_df[selected_columns].head(1))
+    new_line(3)
 
 
 def plot_comments_replies_trend(comments_df, replies_df):
