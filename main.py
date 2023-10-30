@@ -53,13 +53,11 @@ if submit_btn and yt_url:
         parse_comments_dataset(comments_df)
 
         # 4. Analyze the sentiment
-        comment_sentiment = SentimentAnalyzer(comments_df)
-        replies_sentiment = SentimentAnalyzer(replies_df)
+        sentiment = SentimentAnalyzer(comments_df, replies_df)
+        sentiment.analyze_sentiment()
 
-        comment_sentiment.analyze_sentiment()
-
-        # Generate comments sentiment report
-        comment_sentiment.show_report_table()
+        # 5. Display sentiment report
+        sentiment.show_report_table()
 
     except Exception as ex:
         new_line()

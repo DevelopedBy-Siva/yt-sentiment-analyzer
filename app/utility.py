@@ -98,7 +98,7 @@ def plot_comments_replies_trend(comments_df, replies_df):
     st.markdown("##### User Interaction Over Time")
     st.caption("This chart visually represents the trend of user interaction, "
                "showcasing the ebb and flow of comments and replies over the selected time period.")
-    new_line()
+    new_line(2)
 
     # Create two columns as tabs
     col1, col2 = st.tabs(["Comments & Replies", "Comments"])

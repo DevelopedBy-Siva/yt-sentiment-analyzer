@@ -2,7 +2,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import re
 from textblob import TextBlob
 import streamlit as st
-
+import altair as alt
+from app.utility import new_line
 
 def clean_data(comment):
     no_punc = re.sub(r'[^\w\s]', '', comment)
@@ -29,8 +30,9 @@ def get_analysis(score):
 
 class SentimentAnalyzer:
 
-    def __init__(self, comments_df):
+    def __init__(self, comments_df, replies_df):
         self.comments_df = comments_df
+        self.replies_df = replies_df
         self.tfidf = TfidfVectorizer(strip_accents=None, lowercase=False, preprocessor=None)
 
     def analyze_sentiment(self):
@@ -52,6 +54,20 @@ class SentimentAnalyzer:
             - **Analysis** : Categorized sentiment result—whether the sentiment is positive, negative, 
             or neutral.
             ''')
-        st.write("\n")
+        new_line(2)
         # Result in tabular form
         st.dataframe(self.comments_df[["comment", "subjectivity", "polarity", "analysis"]])
+        new_line(4)
+
+        st.markdown("###### Sentiment Analysis Distribution")
+        new_line(3)
+
+        # Create a bar chart for sentiment analysis count
+        chart = alt.Chart(self.comments_df).mark_bar().encode(
+            x='analysis:N',
+            y='count():Q',
+            color='analysis:N'
+        )
+
+        # Display the bar chart using Streamlit and Altair
+        st.altair_chart(chart, use_container_width=True)
