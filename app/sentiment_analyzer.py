@@ -1,9 +1,9 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import re
-from textblob import TextBlob
 import streamlit as st
 import altair as alt
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import re
+from textblob import TextBlob
 from app.utility import new_line
 
 
@@ -33,6 +33,10 @@ def get_analysis(score):
 class SentimentAnalyzer:
 
     def __init__(self, comments_df, replies_df):
+        """
+        :param comments_df: Comments dataframe
+        :param replies_df: Replies dataframe
+        """
         self.comments_df = comments_df
         self.replies_df = replies_df
         self.tfidf = TfidfVectorizer(strip_accents=None, lowercase=False, preprocessor=None)
@@ -46,6 +50,10 @@ class SentimentAnalyzer:
         return self.comments_df
 
     def show_report_and_plot(self):
+        """
+        Plots sentiment analysis result on a chart
+        :return: None
+        """
         st.markdown("##### Sentiment Analysis Results")
         st.caption("Explore the analysis results captured in this table, featuring key insights "
                    "derived from the dataset. The columns include:")
@@ -62,7 +70,8 @@ class SentimentAnalyzer:
         new_line(4)
 
         st.markdown("###### Sentiment Distribution")
-        new_line(3)
+        st.caption("This bar chart reveals the count of positive, negative, and neutral comments.")
+        new_line(2)
 
         # Create a bar chart
         chart = alt.Chart(self.comments_df).mark_bar().encode(
@@ -75,10 +84,11 @@ class SentimentAnalyzer:
         )
         # Display the bar chart
         st.altair_chart(chart, use_container_width=True)
-        new_line(4)
+        new_line(3)
 
         st.markdown("###### Sentiment Over Time")
-        new_line(3)
+        st.caption("This line chart illustrates changes in positive, negative, and neutral comments over time.")
+        new_line()
 
         # Group by timestamp and sentiment analysis, then count the occurrences
         grouped_df = self.comments_df.groupby(['timestamp', 'analysis']).size().reset_index(name='count')
@@ -91,8 +101,8 @@ class SentimentAnalyzer:
         melted_df = pd.melt(resampled_df, id_vars=['timestamp'], value_vars=['Positive', 'Neutral', 'Negative'],
                             var_name='Sentiment', value_name='Count')
 
-        # Create & display line chart for
-        chart_sentiment_analysis = alt.Chart(melted_df).mark_line().encode(
+        # Create & display line chart
+        overall_sentiment = alt.Chart(melted_df).mark_line().encode(
             x='timestamp:T',
             y='Count:Q',
             color=alt.Color('Sentiment:N', scale=alt.Scale(
@@ -102,4 +112,33 @@ class SentimentAnalyzer:
             tooltip=['timestamp:T', 'Count:Q', 'Sentiment:N']
         ).interactive()
 
-        st.altair_chart(chart_sentiment_analysis, use_container_width=True)
+        positive_sentiment = alt.Chart(melted_df[melted_df['Sentiment'] == 'Positive']).mark_line().encode(
+            x='timestamp:T',
+            y='Count:Q',
+            color=alt.value('#1F77B4'),
+        ).interactive()
+
+        negative_sentiment = alt.Chart(melted_df[melted_df['Sentiment'] == 'Negative']).mark_line().encode(
+            x='timestamp:T',
+            y='Count:Q',
+            color=alt.value('#FF5252'),
+        ).interactive()
+
+        neutral_sentiment = alt.Chart(melted_df[melted_df['Sentiment'] == 'Neutral']).mark_line().encode(
+            x='timestamp:T',
+            y='Count:Q',
+            color=alt.value('#AEC7E8'),
+        ).interactive()
+
+        # Create 4 columns as tabs
+        col1, col2, col3, col4 = st.tabs(["Overall", "Positive", "Neutral", "Negative"])
+
+        # Display charts based on the selected tab
+        with col1:
+            st.altair_chart(overall_sentiment, use_container_width=True)
+        with col2:
+            st.altair_chart(positive_sentiment, use_container_width=True)
+        with col3:
+            st.altair_chart(neutral_sentiment, use_container_width=True)
+        with col4:
+            st.altair_chart(negative_sentiment, use_container_width=True)
