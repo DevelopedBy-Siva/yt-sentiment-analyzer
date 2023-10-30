@@ -57,7 +57,7 @@ if submit_btn and yt_url:
         sentiment.analyze_sentiment()
 
         # 5. Display sentiment report
-        sentiment.show_report_table()
+        sentiment.show_report_and_plot()
 
     except Exception as ex:
         new_line()

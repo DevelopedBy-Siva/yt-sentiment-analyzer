@@ -3,7 +3,9 @@ from sklearn.feature_extraction.text import re
 from textblob import TextBlob
 import streamlit as st
 import altair as alt
+import pandas as pd
 from app.utility import new_line
+
 
 def clean_data(comment):
     no_punc = re.sub(r'[^\w\s]', '', comment)
@@ -43,7 +45,7 @@ class SentimentAnalyzer:
 
         return self.comments_df
 
-    def show_report_table(self):
+    def show_report_and_plot(self):
         st.markdown("##### Sentiment Analysis Results")
         st.caption("Explore the analysis results captured in this table, featuring key insights "
                    "derived from the dataset. The columns include:")
@@ -59,15 +61,45 @@ class SentimentAnalyzer:
         st.dataframe(self.comments_df[["comment", "subjectivity", "polarity", "analysis"]])
         new_line(4)
 
-        st.markdown("###### Sentiment Analysis Distribution")
+        st.markdown("###### Sentiment Distribution")
         new_line(3)
 
-        # Create a bar chart for sentiment analysis count
+        # Create a bar chart
         chart = alt.Chart(self.comments_df).mark_bar().encode(
             x='analysis:N',
             y='count():Q',
-            color='analysis:N'
+            color=alt.Color('analysis:N', scale=alt.Scale(
+                domain=['Positive', 'Neutral', 'Negative'],
+                range=['#1F77B4', '#AEC7E8', '#FF5252']
+            )),
         )
-
-        # Display the bar chart using Streamlit and Altair
+        # Display the bar chart
         st.altair_chart(chart, use_container_width=True)
+        new_line(4)
+
+        st.markdown("###### Sentiment Over Time")
+        new_line(3)
+
+        # Group by timestamp and sentiment analysis, then count the occurrences
+        grouped_df = self.comments_df.groupby(['timestamp', 'analysis']).size().reset_index(name='count')
+        # Pivot the DataFrame to have separate columns for positive, negative, and neutral counts
+        pivot_df = grouped_df.pivot_table(index='timestamp', columns='analysis', values='count',
+                                          fill_value=0).reset_index()
+
+        # Resample the DataFrame to have daily counts
+        resampled_df = pivot_df.resample('M', on='timestamp').sum().reset_index()
+        melted_df = pd.melt(resampled_df, id_vars=['timestamp'], value_vars=['Positive', 'Neutral', 'Negative'],
+                            var_name='Sentiment', value_name='Count')
+
+        # Create & display line chart for
+        chart_sentiment_analysis = alt.Chart(melted_df).mark_line().encode(
+            x='timestamp:T',
+            y='Count:Q',
+            color=alt.Color('Sentiment:N', scale=alt.Scale(
+                domain=['Positive', 'Neutral', 'Negative'],
+                range=['#1F77B4', '#AEC7E8', '#FF5252']
+            )),
+            tooltip=['timestamp:T', 'Count:Q', 'Sentiment:N']
+        ).interactive()
+
+        st.altair_chart(chart_sentiment_analysis, use_container_width=True)
