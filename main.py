@@ -24,43 +24,43 @@ with st.form(key="input_form"):
     new_line()
 
 if submit_btn and yt_url:
-    try:
-        # StartTime: Calculate process time
-        start_time = time.time()
+    with st.spinner("Analyzing... Please wait."):
+        try:
+            # StartTime: Calculate process time
+            start_time = time.time()
 
-        # Collect YouTube video details
-        dataset = YouTubeData(yt_url)
-        info = dataset.get_video_info()
-        # Comments Dataframe
-        comments_df = dataset.get_dataframes()[0]
+            # Collect YouTube video details
+            dataset = YouTubeData(yt_url)
+            info = dataset.get_video_info()
+            # Comments Dataframe
+            comments_df = dataset.get_dataframes()[0]
 
-        # Replies Dataframe
-        replies_df = dataset.get_dataframes()[1]
+            # Replies Dataframe
+            replies_df = dataset.get_dataframes()[1]
 
-        # EndTime: Calculate process time
-        end_time = time.time()
-        new_line()
-        st.success(f"Analysis finished in {round(end_time - start_time, 2)}s")
-        new_line(3)
+            # EndTime: Calculate process time
+            end_time = time.time()
+            new_line()
+            st.success(f"Analysis finished in {round(end_time - start_time, 2)}s")
+            new_line(3)
 
-        # 1. Parse and display video info
-        parse_info(info, len(comments_df.index))
+            # 1. Parse and display video info
+            parse_info(info, len(comments_df.index))
 
-        # 2. Plot comments & replies trends in a chart
-        plot_comments_replies_trend(comments_df, replies_df)
+            # 2. Plot comments & replies trends in a chart
+            plot_comments_replies_trend(comments_df, replies_df)
 
-        # 3. Parse and display the sample dataset
-        parse_comments_dataset(comments_df)
+            # 3. Parse and display the sample dataset
+            parse_comments_dataset(comments_df)
 
-        # 4. Analyze the sentiment
-        sentiment = SentimentAnalyzer(comments_df, replies_df)
-        sentiment.analyze_sentiment()
+            # 4. Analyze the sentiment
+            sentiment = SentimentAnalyzer(comments_df, replies_df)
+            sentiment.analyze_sentiment()
 
-        # 5. Display sentiment report
-        sentiment.show_report_and_plot()
+            # 5. Display sentiment report
+            sentiment.show_report_and_plot()
 
-    except Exception as ex:
-        new_line()
-        error_msg = str(ex)
-        st.error(error_msg)
-
+        except Exception as ex:
+            new_line()
+            error_msg = str(ex)
+            st.error(error_msg)
