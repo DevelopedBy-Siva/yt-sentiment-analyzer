@@ -1,6 +1,7 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
+import plotly.express as px
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import re
 from textblob import TextBlob
@@ -55,6 +56,25 @@ class SentimentAnalyzer:
         :return: None
         """
         st.markdown("##### Sentiment Analysis Results")
+
+        # Calculate the percentage & display pie chart
+        sentiment_counts = self.comments_df['analysis'].value_counts()
+
+        total_comments = len(self.comments_df)
+        percentage_positive = (sentiment_counts.get("Positive", 0) / total_comments) * 100
+        percentage_negative = (sentiment_counts.get("Negative", 0) / total_comments) * 100
+        percentage_neutral = (sentiment_counts.get("Neutral", 0) / total_comments) * 100
+
+        st.caption("The breakdown of user comments with positive, negative, and neutral sentiments "
+                   "helps to understand the overall tone of audience interactions.")
+        fig = px.pie(
+            values=[percentage_positive, percentage_negative, percentage_neutral],
+            names=['Positive', 'Negative', 'Neutral'],
+            labels={'label': 'Sentiment'}
+        )
+        st.plotly_chart(fig)
+
+        st.markdown("###### Sentiment Analysis Breakdown")
         st.caption("Explore the analysis results captured in this table, featuring key insights "
                    "derived from the dataset. The columns include:")
         st.caption('''
