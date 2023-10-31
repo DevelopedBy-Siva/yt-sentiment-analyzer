@@ -4,8 +4,7 @@ from sklearn.feature_extraction.text import re
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# API_KEY = os.environ.get("GOOGLE_API_KEY")
-API_KEY = "AIzaSyBlyCl_nuoAWm0Pd6LuuZZB7Hnuh9qf_1w"
+API_KEY = os.environ.get("GOOGLE_API_KEY")
 
 
 class DataRetrievalError(Exception):
