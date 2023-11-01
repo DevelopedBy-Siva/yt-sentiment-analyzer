@@ -40,13 +40,18 @@ class SentimentAnalyzer:
         """
         self.comments_df = comments_df
         self.replies_df = replies_df
-        self.tfidf = TfidfVectorizer(strip_accents=None, lowercase=False, preprocessor=None)
+        self.tfidf = TfidfVectorizer(
+            strip_accents=None, lowercase=False, preprocessor=None)
 
     def analyze_sentiment(self):
-        self.comments_df['comment'] = self.comments_df['comment'].apply(clean_data)
-        self.comments_df['subjectivity'] = self.comments_df['comment'].apply(get_subjectivity)
-        self.comments_df['polarity'] = self.comments_df['comment'].apply(get_polarity)
-        self.comments_df['analysis'] = self.comments_df['polarity'].apply(get_analysis)
+        self.comments_df['comment'] = self.comments_df['comment'].apply(
+            clean_data)
+        self.comments_df['subjectivity'] = self.comments_df['comment'].apply(
+            get_subjectivity)
+        self.comments_df['polarity'] = self.comments_df['comment'].apply(
+            get_polarity)
+        self.comments_df['analysis'] = self.comments_df['polarity'].apply(
+            get_analysis)
 
         return self.comments_df
 
@@ -61,16 +66,23 @@ class SentimentAnalyzer:
         sentiment_counts = self.comments_df['analysis'].value_counts()
 
         total_comments = len(self.comments_df)
-        percentage_positive = (sentiment_counts.get("Positive", 0) / total_comments) * 100
-        percentage_negative = (sentiment_counts.get("Negative", 0) / total_comments) * 100
-        percentage_neutral = (sentiment_counts.get("Neutral", 0) / total_comments) * 100
+        percentage_positive = (sentiment_counts.get(
+            "Positive", 0) / total_comments) * 100
+        percentage_negative = (sentiment_counts.get(
+            "Negative", 0) / total_comments) * 100
+        percentage_neutral = (sentiment_counts.get(
+            "Neutral", 0) / total_comments) * 100
 
         st.caption("The breakdown of user comments with positive, negative, and neutral sentiments "
                    "helps to understand the overall tone of audience interactions.")
         fig = px.pie(
-            values=[percentage_positive, percentage_negative, percentage_neutral],
+            values=[percentage_positive,
+                    percentage_negative, percentage_neutral],
             names=['Positive', 'Negative', 'Neutral'],
-            labels={'label': 'Sentiment'}
+            labels={'label': 'Sentiment'},
+            # Specify colors for all categories
+            color_discrete_sequence=['#1F77B4', '#AEC7E8', '#FF5252']
+
         )
         st.plotly_chart(fig)
 
@@ -86,11 +98,13 @@ class SentimentAnalyzer:
             ''')
         new_line(2)
         # Result in tabular form
-        st.dataframe(self.comments_df[["comment", "subjectivity", "polarity", "analysis"]])
+        st.dataframe(
+            self.comments_df[["comment", "subjectivity", "polarity", "analysis"]])
         new_line(4)
 
         st.markdown("###### Sentiment Distribution")
-        st.caption("This bar chart reveals the count of positive, negative, and neutral comments.")
+        st.caption(
+            "This bar chart reveals the count of positive, negative, and neutral comments.")
         new_line(2)
 
         # Create a bar chart
@@ -107,17 +121,20 @@ class SentimentAnalyzer:
         new_line(3)
 
         st.markdown("###### Sentiment Over Time")
-        st.caption("This line chart illustrates changes in positive, negative, and neutral comments over time.")
+        st.caption(
+            "This line chart illustrates changes in positive, negative, and neutral comments over time.")
         new_line()
 
         # Group by timestamp and sentiment analysis, then count the occurrences
-        grouped_df = self.comments_df.groupby(['timestamp', 'analysis']).size().reset_index(name='count')
+        grouped_df = self.comments_df.groupby(
+            ['timestamp', 'analysis']).size().reset_index(name='count')
         # Pivot the DataFrame to have separate columns for positive, negative, and neutral counts
         pivot_df = grouped_df.pivot_table(index='timestamp', columns='analysis', values='count',
                                           fill_value=0).reset_index()
 
         # Resample the DataFrame to have daily counts
-        resampled_df = pivot_df.resample('M', on='timestamp').sum().reset_index()
+        resampled_df = pivot_df.resample(
+            'M', on='timestamp').sum().reset_index()
         melted_df = pd.melt(resampled_df, id_vars=['timestamp'], value_vars=['Positive', 'Neutral', 'Negative'],
                             var_name='Sentiment', value_name='Count')
 
@@ -151,7 +168,8 @@ class SentimentAnalyzer:
         ).interactive()
 
         # Create 4 columns as tabs
-        col1, col2, col3, col4 = st.tabs(["Overall", "Positive", "Neutral", "Negative"])
+        col1, col2, col3, col4 = st.tabs(
+            ["Overall", "Positive", "Neutral", "Negative"])
 
         # Display charts based on the selected tab
         with col1:
