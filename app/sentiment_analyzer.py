@@ -80,9 +80,11 @@ class SentimentAnalyzer:
                     percentage_negative, percentage_neutral],
             names=['Positive', 'Negative', 'Neutral'],
             labels={'label': 'Sentiment'},
-            # Specify colors for all categories
-            color_discrete_sequence=['#1F77B4', '#AEC7E8', '#FF5252']
-
+            color_discrete_sequence=[
+                "#1F77B4",
+                "#AEC7E8",
+                "#FF5252",
+            ],
         )
         st.plotly_chart(fig)
 
