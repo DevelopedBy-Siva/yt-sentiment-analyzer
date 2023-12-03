@@ -1,8 +1,26 @@
 import streamlit as st
+import os
+import logging
 import time
 from app.youtube_data import YouTubeData
 from app.sentiment_analyzer import SentimentAnalyzer
 from app.utility import new_line, parse_info, parse_comments_dataset, plot_comments_replies_trend, SAMPLE_URL
+
+# Init logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+build_flag = ".build"
+
+sentiment = None
+if not os.path.exists(build_flag):
+    try:
+        with open(build_flag, "w") as flag_file:
+            sentiment = SentimentAnalyzer()
+            flag_file.write("Build completed...")
+        logging.info("App build completed")
+    except Exception as ex:
+        logging.error(f"Error during app build: {str(ex)}")
 
 # Configure the page
 st.set_page_config(page_title="YouTube Sentiment Analyzer", page_icon=None, layout="centered")
@@ -54,7 +72,7 @@ if submit_btn and yt_url:
             parse_comments_dataset(comments_df)
 
             # 4. Analyze the sentiment
-            sentiment = SentimentAnalyzer(comments_df, replies_df)
+            sentiment.set_data(comments_df, replies_df)
             sentiment.analyze_sentiment()
 
             # 5. Display sentiment report

@@ -33,15 +33,19 @@ def get_analysis(score):
 
 class SentimentAnalyzer:
 
-    def __init__(self, comments_df, replies_df):
+    def __init__(self):
+        self.comments_df = None
+        self.replies_df = None
+        self.tfidf = TfidfVectorizer(
+            strip_accents=None, lowercase=False, preprocessor=None)
+
+    def set_data(self, comments_df, replies_df):
         """
         :param comments_df: Comments dataframe
         :param replies_df: Replies dataframe
         """
         self.comments_df = comments_df
         self.replies_df = replies_df
-        self.tfidf = TfidfVectorizer(
-            strip_accents=None, lowercase=False, preprocessor=None)
 
     def analyze_sentiment(self):
         self.comments_df['comment'] = self.comments_df['comment'].apply(
