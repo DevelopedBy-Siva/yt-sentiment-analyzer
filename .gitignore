@@ -1,3 +1,5 @@
 /.idea
 .build
 .DS_Store
+__MACOSX/
+old_dataset.csv
