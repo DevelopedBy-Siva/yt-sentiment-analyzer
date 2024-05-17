@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import logging
 import time
 from app.youtube_data import YouTubeData
@@ -10,17 +9,7 @@ from app.utility import new_line, parse_info, parse_comments_dataset, plot_comme
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-build_flag = ".build"
-
-sentiment = None
-if not os.path.exists(build_flag):
-    try:
-        with open(build_flag, "w") as flag_file:
-            sentiment = SentimentAnalyzer()
-            flag_file.write("Build completed...")
-        logging.info("App build completed")
-    except Exception as ex:
-        logging.error(f"Error during app build: {str(ex)}")
+sentiment = SentimentAnalyzer()
 
 # Configure the page
 st.set_page_config(page_title="YouTube Sentiment Analyzer", page_icon=None, layout="centered")
