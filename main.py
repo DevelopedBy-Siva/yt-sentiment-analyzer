@@ -1,9 +1,11 @@
-import streamlit as st
 import logging
 import time
-from app.youtube_data import YouTubeData
+
+import streamlit as st
+
 from app.sentiment_analyzer import SentimentAnalyzer
 from app.utility import new_line, parse_info, parse_comments_dataset, plot_comments_replies_trend, SAMPLE_URL
+from app.youtube_data import YouTubeData
 
 # Init logging
 logger = logging.getLogger()

@@ -1,9 +1,10 @@
-import pandas as pd
-from textblob import TextBlob
 import re
-import nltk
-from nltk.corpus import stopwords
 import zipfile
+
+import nltk
+import pandas as pd
+from nltk.corpus import stopwords
+from textblob import TextBlob
 
 nltk.download('stopwords')
 

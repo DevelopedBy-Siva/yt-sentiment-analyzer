@@ -1,8 +1,9 @@
-import pandas as pd
 import os
-from sklearn.feature_extraction.text import re
+
+import pandas as pd
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from sklearn.feature_extraction.text import re
 
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -179,4 +180,5 @@ class YouTubeData:
                 raise DataRetrievalError("Comments are disabled for this video. Please try a different one.")
             raise DataRetrievalError("An unexpected error occurred. Please try your request again.")
         except Exception:
-            raise DataRetrievalError("Unable to retrieve data. Please try again or consider choosing a different video.")
+            raise DataRetrievalError(
+                "Unable to retrieve data. Please try again or consider choosing a different video.")

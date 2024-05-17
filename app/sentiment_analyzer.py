@@ -1,34 +1,36 @@
-import streamlit as st
+import os
+import pickle
+
 import altair as alt
+import nltk
+import numpy as np
 import pandas as pd
 import plotly.express as px
-from sklearn.feature_extraction.text import TfidfVectorizer
+import streamlit as st
+from keras.models import load_model
+from keras.preprocessing.sequence import pad_sequences
+from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import re
-from textblob import TextBlob
+
 from app.utility import new_line
+
+nltk.download('stopwords')
+
+model_path = os.path.join(os.path.dirname(__file__), '../train/yt_model.h5')
+tokenizer_path = os.path.join(os.path.dirname(__file__), '../train/tokenizer.pkl')
 
 
 def clean_data(comment):
-    no_punc = re.sub(r'[^\w\s]', '', comment)
-    no_digits = ''.join([i for i in no_punc if not i.isdigit()])
-    return no_digits
-
-
-def get_subjectivity(text):
-    return TextBlob(text).sentiment.subjectivity
-
-
-def get_polarity(text):
-    return TextBlob(text).sentiment.polarity
-
-
-def get_analysis(score):
-    if score < 0:
-        return 'Negative'
-    elif score == 0:
-        return 'Neutral'
-    else:
-        return 'Positive'
+    text = re.sub(r'http\S+', '', comment)
+    text = re.sub(r'@\w+', '', text)
+    text = re.sub(r'#', '', text)
+    text = re.sub(r'[^\w\s]', '', text)
+    text = text.lower()
+    text = text.split()
+    stop_words = set(stopwords.words('english'))
+    text = [word for word in text if word not in stop_words]
+    text = ' '.join(text)
+    return text
 
 
 class SentimentAnalyzer:
@@ -36,8 +38,22 @@ class SentimentAnalyzer:
     def __init__(self):
         self.comments_df = None
         self.replies_df = None
-        self.tfidf = TfidfVectorizer(
-            strip_accents=None, lowercase=False, preprocessor=None)
+        # Load model
+        self.model = load_model(model_path)
+
+        # Load tokenizer
+        with open(tokenizer_path, 'rb') as handle:
+            self.tokenizer = pickle.load(handle)
+
+    def get_sentiments(self, texts):
+        texts_cleaned = [clean_data(text) for text in texts]
+        texts_tokenized = self.tokenizer.texts_to_sequences(texts_cleaned)
+        texts_padded = pad_sequences(texts_tokenized, maxlen=self.model.input_shape[1])
+        predictions = self.model.predict(texts_padded, verbose=0)
+        labels = np.argmax(predictions, axis=1)
+        sentiment_map = {-1: 'Negative', 0: 'Neutral', 1: 'Positive'}
+        predicted_sentiments = [sentiment_map[label - 1] for label in labels]
+        return predicted_sentiments
 
     def set_data(self, comments_df, replies_df):
         """
@@ -50,12 +66,7 @@ class SentimentAnalyzer:
     def analyze_sentiment(self):
         self.comments_df['comment'] = self.comments_df['comment'].apply(
             clean_data)
-        self.comments_df['subjectivity'] = self.comments_df['comment'].apply(
-            get_subjectivity)
-        self.comments_df['polarity'] = self.comments_df['comment'].apply(
-            get_polarity)
-        self.comments_df['analysis'] = self.comments_df['polarity'].apply(
-            get_analysis)
+        self.comments_df['analysis'] = self.get_sentiments(self.comments_df['comment'])
 
         return self.comments_df
 
@@ -93,19 +104,13 @@ class SentimentAnalyzer:
         st.plotly_chart(fig)
 
         st.markdown("###### Sentiment Analysis Breakdown")
-        st.caption("Explore the analysis results captured in this table, featuring key insights "
-                   "derived from the dataset. The columns include:")
-        st.caption('''
-            - **Subjectivity** : A measure indicating the extent to which the text expresses personal opinions 
-            rather than factual information. 
-            - **Polarity** : The measure of the sentiment's degree, ranging from negative to positive.
-            - **Analysis** : Categorized sentiment result—whether the sentiment is positive, negative, 
-            or neutral.
-            ''')
+        st.caption(
+            "Delve into the key takeaways from this table, which summarizes the sentiment—positive, negative, "
+            "or neutral—gleaned from analyzing YouTube comments.")
         new_line(2)
         # Result in tabular form
         st.dataframe(
-            self.comments_df[["comment", "subjectivity", "polarity", "analysis"]])
+            self.comments_df[["comment", "analysis"]])
         new_line(4)
 
         st.markdown("###### Sentiment Distribution")

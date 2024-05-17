@@ -1,6 +1,7 @@
-import pandas as pd
 from datetime import datetime, timezone
+
 import altair as alt
+import pandas as pd
 import streamlit as st
 
 SAMPLE_URL = "https://www.youtube.com/watch?v=X3paOmcrTjQ"

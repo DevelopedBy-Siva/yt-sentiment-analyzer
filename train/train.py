@@ -1,10 +1,11 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras.models import Sequential
-from keras.layers import Embedding, LSTM, Dense, SpatialDropout1D
 import pickle
+
+import pandas as pd
+from keras.layers import Embedding, LSTM, Dense, SpatialDropout1D
+from keras.models import Sequential
+from keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.text import Tokenizer
+from sklearn.model_selection import train_test_split
 
 # Load dataset: Dataset already cleaned-> ./data/classify_data.py
 data = pd.read_csv('data/dataset.csv', encoding='ISO-8859-1', header=0)
