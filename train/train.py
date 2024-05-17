@@ -4,10 +4,10 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import Embedding, LSTM, Dense, SpatialDropout1D
-from keras.callbacks import ModelCheckpoint, EarlyStopping
+import pickle
 
 # Load dataset: Dataset already cleaned-> ./data/classify_data.py
-data = pd.read_csv('data/dataset.csv', encoding='ISO-8859-1', header=0)
+data = pd.read_csv('data/dataset.csv', encoding='ISO-8859-1', header=0, nrows=5000)
 # Remove rows where 'comment' is NaN
 data = data.dropna(subset=['comment'])
 
@@ -32,9 +32,6 @@ model.add(Dense(3, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-checkpoint = ModelCheckpoint('model_checkpoint.h5', monitor='val_loss', mode='min', save_best_only=True, verbose=1)
-early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=1)
-
 # Train the model
 batch_size = 32
 epochs = 5
@@ -44,7 +41,6 @@ history = model.fit(
     epochs=epochs,
     batch_size=batch_size,
     validation_data=(X_test, y_test),
-    callbacks=[checkpoint, early_stopping],
     verbose=1
 )
 
@@ -52,5 +48,9 @@ score, acc = model.evaluate(X_test, y_test, verbose=2, batch_size=batch_size)
 print("Test Score:", score)
 print("Test Accuracy:", acc)
 
-# Save the model
-model.save('yt_model.keras')
+# Save model
+model.save('yt_model.h5')
+
+# Save tokenizer
+with open('tokenizer.pkl', 'wb') as handle:
+    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
