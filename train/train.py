@@ -7,7 +7,7 @@ from keras.layers import Embedding, LSTM, Dense, SpatialDropout1D
 import pickle
 
 # Load dataset: Dataset already cleaned-> ./data/classify_data.py
-data = pd.read_csv('data/dataset.csv', encoding='ISO-8859-1', header=0, nrows=5000)
+data = pd.read_csv('data/dataset.csv', encoding='ISO-8859-1', header=0)
 # Remove rows where 'comment' is NaN
 data = data.dropna(subset=['comment'])
 
@@ -33,8 +33,8 @@ model.add(Dense(3, activation='softmax'))
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 # Train the model
-batch_size = 32
-epochs = 5
+batch_size = 64
+epochs = 20
 
 history = model.fit(
     X_train, y_train,
